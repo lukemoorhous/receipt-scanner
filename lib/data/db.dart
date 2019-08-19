@@ -75,7 +75,7 @@ class DatabaseProvider {
     String path = join(directory.path, "receipt.db");
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (Database db, int version) async {
         await db.execute("CREATE TABLE $receiptTable ("
             "$id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -95,6 +95,24 @@ class DatabaseProvider {
             ");");
         
         _initDatabase(db);
+      },
+      onUpgrade: (Database db, int existVersion, int upgradeVersion) async {
+        print("Updgrading database to v$upgradeVersion. Previously v$existVersion.");
+
+        switch(upgradeVersion) {
+        case 2 : 
+          await db.execute("CREATE TABLE $budgetTable ("
+              "$id INTEGER PRIMARY KEY AUTOINCREMENT, "
+              "$budgetName STRING NOT NULL, "
+              "$budgetAmount INTEGER NOT NULL, "
+              "$budgetStart INTEGER NOT NULL, "
+              "$budgetEnd INTEGER NOT NULL, "
+              "$budgetProgress INTEGER NOT NULL"
+              ");");
+
+          _initDatabase(db);
+
+        }
       }
     );
   }
